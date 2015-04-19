@@ -21,3 +21,14 @@ python testMidiWrite.py
 </pre>
 
 It will generate a midi file which plays "Twinkle, Twinkle, Little Star"
+
+
+Peng: midi read function is working. Run:
+
+<pre>
+python testMidiRead.py
+</pre>
+
+It will read in midis/FurElise.mid , change all C notes to C#, and write the
+results song to midis/FurEliseWeird.mid . As a result, "Fur Elise" is changed
+from A minor to A major.
