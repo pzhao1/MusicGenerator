@@ -1,0 +1,23 @@
+= Music Generator =
+
+Use Markov Chains to generate music.
+
+Author: Andrew Pak, Chengying Wang, Peng Zhao
+
+
+== 04/19/2015 ==
+
+# Peng: Found a library for processing midi in Python. To install, run:
+
+<pre>
+python library/python-midi-master/setup.py install
+</pre>
+
+
+# Peng: midi write function is working. Run:
+
+<pre>
+python testMidiWrite.py
+</pre>
+
+It will generate a midi file which plays "Twinkle, Twinkle, Little Star"
