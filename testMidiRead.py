@@ -8,10 +8,10 @@ def main():
 
 	# Read in the "Fur Elise" midi file
 	elisePattern = midi.read_midifile(inFileName)
-
+	
 	# Create a new pattern for output, and set the control stuff to the same 
 	# as the original midi.
-	pattern = midi.Pattern()
+	pattern = midi.Pattern(format=1, resolution=256)
 	pattern.append(elisePattern[0])
 
 	# Go through the notes. Change all C to C#
@@ -26,7 +26,7 @@ def main():
 
 	# Write the new file to disk.
 	midi.write_midifile(outFileName, pattern)
-	print "\nMusic writtent to " + outFileName + "\n"
+	print "\nMusic written to " + outFileName + "\n"
 
 if __name__ == "__main__":
 	main()
