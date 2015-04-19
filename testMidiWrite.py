@@ -15,22 +15,28 @@ def main():
 
 
 	# Write notes for Twinkle Twinkle Little Star.
-	sheet = [("C_4", 0), ("C_4", 500), ("G_4", 500), ("G_4", 500), ("A_4", 500), ("A_4", 500), ("G_4", 500), 
-	         ("F_4", 1000), ("F_4", 500), ("E_4", 500), ("E_4", 500), ("D_4", 500), ("D_4", 500), ("C_4", 500), 
-	         ("G_4", 1000), ("G_4", 500), ("F_4", 500), ("F_4", 500), ("E_4", 500), ("E_4", 500), ("D_4", 500),
-	         ("G_4", 1000), ("G_4", 500), ("F_4", 500), ("F_4", 500), ("E_4", 500), ("E_4", 500), ("D_4", 500),
-	         ("C_4", 1000), ("C_4", 500), ("G_4", 500), ("G_4", 500), ("A_4", 500), ("A_4", 500), ("G_4", 500), 
-	         ("F_4", 1000), ("F_4", 500), ("E_4", 500), ("E_4", 500), ("D_4", 500), ("D_4", 500), ("C_4", 500)]
+	sheet = [("C_5", 0), ("C_5", 300), ("G_5", 300), ("G_5", 300), ("A_5", 300), ("A_5", 300), ("G_5", 300), 
+	         ("F_5", 600), ("F_5", 300), ("E_5", 300), ("E_5", 300), ("D_5", 300), ("D_5", 300), ("C_5", 300), 
+	         ("G_5", 600), ("G_5", 300), ("F_5", 300), ("F_5", 300), ("E_5", 300), ("E_5", 300), ("D_5", 300),
+	         ("G_5", 600), ("G_5", 300), ("F_5", 300), ("F_5", 300), ("E_5", 300), ("E_5", 300), ("D_5", 300),
+	         ("C_5", 600), ("C_5", 300), ("G_5", 300), ("G_5", 300), ("A_5", 300), ("A_5", 300), ("G_5", 300), 
+	         ("F_5", 600), ("F_5", 300), ("E_5", 300), ("E_5", 300), ("D_5", 300), ("D_5", 300), ("C_5", 300)]
 
+	prevNote = None
 	for note, time in sheet:
+		# Append the new note
 		track.append(midi.NoteOnEvent(tick=time, velocity=20, pitch=midi.__dict__[note]))
 
-	# Instantiate a MIDI note off event, append it to the track
-	off = midi.NoteOffEvent(tick=500, pitch=midi.G_3)
-	track.append(off)
+		# Stop the previous note to avoid 
+		if prevNote != None and prevNote != note:
+			track.append(midi.NoteOffEvent(tick=0, pitch=midi.__dict__[prevNote]))
+
+		prevNote = note
+
+	track.append(midi.NoteOffEvent(tick=300, pitch=midi.__dict__[prevNote]))
 
 	# Add the end of track event, append it to the track
-	eot = midi.EndOfTrackEvent(tick=1)
+	eot = midi.EndOfTrackEvent(tick=0)
 	track.append(eot)
 
 	# Save the pattern to disk
