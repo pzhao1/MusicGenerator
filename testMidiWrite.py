@@ -27,7 +27,7 @@ def main():
 		# Append the new note
 		track.append(midi.NoteOnEvent(tick=time, velocity=20, pitch=midi.__dict__[note]))
 
-		# Stop the previous note to avoid 
+		# Stop the previous note to avoid unpleasant mixing
 		if prevNote != None and prevNote != note:
 			track.append(midi.NoteOffEvent(tick=0, pitch=midi.__dict__[prevNote]))
 
