@@ -1,5 +1,6 @@
 import midi
 import glob
+import warnings
 
 def normalize(matrix):
 	for key1 in matrix:
@@ -20,17 +21,23 @@ def getInfoForOne(inFileName):
 	
 	# Read in the midi file 
 	inFilePattern = midi.read_midifile(inFileName)
-	print inFileName
-	tickList = []
-	pitchList = []
-	velocityList = []
+	print "reading", inFileName, "pattern length = ", len(inFilePattern)
+	tickList = {}
+	pitchList = {}
+	velocityList = {}
 
 	# Go through the notes. Record transitions
-	for event in inFilePattern[1]:
-		if isinstance(event, midi.events.NoteOnEvent):
-			tickList.append(event.tick)
-			pitchList.append(event.get_pitch())
-			velocityList.append(event.get_velocity())
+	num_tracks = len(inFilePattern)
+	for track in range(num_tracks):
+		tickList[track] = []
+		pitchList[track] = []
+		velocityList[track] = []
+		for event in inFilePattern[track]:
+			if isinstance(event, midi.events.NoteOnEvent):
+				tickList[track].append(event.tick)
+				pitchList[track].append(event.get_pitch())
+				velocityList[track].append(event.get_velocity())
+		#print "   track", track, ":", len(tickList[track])
 
 	# return these information
 	return tickList, pitchList, velocityList
@@ -40,32 +47,30 @@ def getTransitionMatrix(inFileNames):
 	tickByFile = {}
 	pitchByFile = {}
 	velocityByFile = {}
-	tickStates = set()
-	pitchStates = set()
-	velocityStates = set()
+	tickStates = set()		# There seems to be no set number of tick values
 
-	# Read all files and find the all the states that appeared in the files
+	# Read all files and find the all the tick states that appeared in the files
 	for name in inFileNames:
 		tickByFile[name], pitchByFile[name], velocityByFile[name] = getInfoForOne(name)
-		tickStates = tickStates.union(tickByFile[name])
-		pitchStates = pitchStates.union(pitchByFile[name])
-		velocityStates = velocityStates.union(velocityByFile[name])
+		for track in range(len(tickByFile[name])):
+			tickStates = tickStates.union(tickByFile[name][track])
 	tickStates = list(tickStates)
-	pitchStates = list(pitchStates)
-	velocityStates = list(velocityStates)
 
 	# Initialize a transition matrix for tick, pitch and velocity with all 0s
-	# The states are all the states that appeared in all the input files
 	tickM = {tick1: {tick2: 0.0 for tick2 in tickStates} for tick1 in tickStates}
-	pitchM = {pitch1: {pitch2: 0.0 for pitch2 in pitchStates} for pitch1 in pitchStates}
-	velocityM = {velocity1: {velocity2: 0.0 for velocity2 in velocityStates} for velocity1 in velocityStates}
+	pitchM = {pitch1: {pitch2: 0.0 for pitch2 in range(128)} for pitch1 in range(128)}
+	velocityM = {velocity1: {velocity2: 0.0 for velocity2 in range(128)} for velocity1 in range(128)}
 
 	# Update the transition matrix based on oberservations from each file
 	for name in inFileNames:
-		for i in range(len(tickByFile[name])-1):
-			tickM[tickByFile[name][i]][tickByFile[name][i+1]] += 1
-			pitchM[pitchByFile[name][i]][pitchByFile[name][i+1]] += 1
-			velocityM[velocityByFile[name][i]][velocityByFile[name][i+1]] += 1
+		for track in range(len(tickByFile[name])):
+			curTick = tickByFile[name][track]
+			curPitch = pitchByFile[name][track]
+			curVelocity = velocityByFile[name][track]
+			for i in range(len(tickByFile[name][track])-1):
+				tickM[curTick[i]][curTick[i+1]] += 1
+				pitchM[curPitch[i]][curPitch[i+1]] += 1
+				velocityM[curVelocity[i]][curVelocity[i+1]] += 1
 	tickM = normalize(tickM)
 	pitchM = normalize(pitchM)
 	velocityM = normalize(velocityM)
@@ -76,8 +81,8 @@ def getTransitionMatrix(inFileNames):
 
 
 def main():
-	files = glob.glob('midis/*.mid')
-	print files
+	files = glob.glob('midis/midiworld/classic/bach*.mid')
+	#print files
 	tickM, pitchM, velocityM = getTransitionMatrix(files)
 	# Just checking dimension is correct. 0 is not a key in pitch
 	print "tickM size: ", len(tickM), "*", len(tickM[0])
