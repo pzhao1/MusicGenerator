@@ -32,3 +32,16 @@ python testMidiRead.py
 It will read in midis/FurElise.mid , change all C notes to C#, and write the
 results song to midis/FurEliseWeird.mid . As a result, "Fur Elise" is changed
 from A minor to A major.
+
+
+== 04/20/2015 ==
+
+Peng: I scraped 1,700 classical music from midiworld.com. You can see them in:
+<pre>
+midis\midiworld\classic\
+</pre>
+If you are interested, the code that downloaded these files is in:
+<pre>
+scrape\
+</pre>
+But you will need to install [http://lxml.de/ lxml] and [http://scrapy.org/ scrapy] to run it.
