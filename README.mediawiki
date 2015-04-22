@@ -7,14 +7,14 @@ Author: Andrew Pak, Chengying Wang, Peng Zhao
 
 == 04/19/2015 ==
 
-Peng: Found a library for processing midi in Python. To install, run:
+Found a library for processing midi in Python. To install, run:
 
 <pre>
 python library/python-midi-master/setup.py install
 </pre>
 
 
-Peng: midi write function is working. Run:
+Midi write function is working. Run:
 
 <pre>
 python testMidiWrite.py
@@ -23,7 +23,7 @@ python testMidiWrite.py
 It will generate a midi file which plays "Twinkle, Twinkle, Little Star"
 
 
-Peng: midi read function is working. Run:
+Midi read function is working. Run:
 
 <pre>
 python testMidiRead.py
@@ -36,7 +36,7 @@ from A minor to A major.
 
 == 04/20/2015 ==
 
-Peng: I scraped 1,700 classical music from midiworld.com. You can see them in:
+Scraped 1,700 classical music from midiworld.com. You can see them in:
 <pre>
 midis\midiworld\classic\
 </pre>
