@@ -13,7 +13,8 @@ def highestPlausibility(tickM, pitchM, velocityM):
 	velocity] and the outer list ordering the nodes visited.
 	"""
 	lengthOfPiece = 100
-	tickPitchVelocityList = [[0, 0, 0] for i in range(lengthOfPiece)]
+	tickPitchVelocityList = []
+	tickPitchVelocity = []
 	currentTick = random.choice(tickM.keys())
 	currentPitch = random.choice(pitchM.keys())
 	currentVelocity = random.choice(velocityM.keys())
@@ -21,17 +22,13 @@ def highestPlausibility(tickM, pitchM, velocityM):
 	#currentVelocity = random.choice([velocity for velocity in velocityM.iterkeys() if sum(velocityM[velocity].values())!=0])
 
 	print "start:", currentTick, currentPitch, currentVelocity
-	index = 0
-	indexpitch = 0
-	indexvelocity = 0
 	for number in range(lengthOfPiece):
 		r = random.random()
 		i = 0
 		for item in tickM[currentTick]:
 			i += tickM[currentTick][item]
 			if r<i:
-				tickPitchVelocityList[index][0] = item
-				index += 1
+				tickPitchVelocity.append(item)
 				currentTick = item
 				break
 
@@ -40,8 +37,7 @@ def highestPlausibility(tickM, pitchM, velocityM):
 		for item in pitchM[currentPitch]:
 			i2 += pitchM[currentPitch][item]
 			if r2<i2:
-				tickPitchVelocityList[indexpitch][1] = item
-				indexpitch += 1
+				tickPitchVelocity.append(item)
 				currentPitch = item
 				break
 
@@ -50,20 +46,22 @@ def highestPlausibility(tickM, pitchM, velocityM):
 		for item in pitchM[currentVelocity]:
 			i3 += velocityM[currentVelocity][item]
 			if r3<i3:
-				tickPitchVelocityList[indexvelocity][2] = item
-				indexvelocity += 1
+				tickPitchVelocity.append(item)
 				currentVelocity = item
 				break
 		#print "index", index, ":", tickPitchVelocityList[indexpitch]
+		tickPitchVelocityList.append(tickPitchVelocity)
 
 	print tickPitchVelocityList
 	return tickPitchVelocityList
 
 def main():
 	inputFiles = glob.glob('midis/midiworld/classic/bach_acttrag.mid')
+	#inputFiles = glob.glob('midis/midiworld/classic/bach*.mid')
 	createNewTransition = True
 	if createNewTransition:
-		tickM, pitchM, velocityM = tt.getTransitionMatrix(inputFiles, 'tickM.txt', 'picthM.txt', 'velocityM.txt')
+		tickM, pitchM, velocityM = tt.getTransitionMatrix(inputFiles)
+		print('tickM.txt', 'picthM.txt', 'velocityM.txt')
 	else:
 		pass
 		# Somehow read in the transition matrices
@@ -80,7 +78,10 @@ def main():
 	pattern.append(track)
 	
 	prevPitch = None
-	for tick, pitch, velocity in tickPitchVelocityList:
+	for item in tickPitchVelocityList:
+		tick = item[0]
+		velocity = item[1]
+		pitch = item[2]
 		# Append the new note
 		track.append(midi.NoteOnEvent(tick=tick, velocity=velocity, pitch=pitch))
 		# Stop the previous note to avoid unpleasant mixing
