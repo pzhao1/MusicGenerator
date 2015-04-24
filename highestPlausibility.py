@@ -1,34 +1,31 @@
-import transitionTrial as tt
+from transitionMatrix import *
 import random
 import glob
 import midi
 
-def highestPlausibility(tickM, pitchM, velocityM):
+def highestPlausibility(lengthM, pitchM, velocityM):
 	"""
-	This function takes 3 matrices as parameters, and outputs a list of lists
-	corresponding to randomly chosen tick, pitch and velocity based on the
-	highest plausibility of transitions obtained from the 3 matrices.
+	This function takes 3 matrices as parameters, and outputs a list of notes
+	corresponding to randomly chosen length, pitch and volume (velocity) based on the
+	transition probabilieies obtained from the 3 matrices.
 
-	returns a list of lists, with the inner list consisting of [tick, pitch,
-	velocity] and the outer list ordering the nodes visited.
+	returns a list of notes
 	"""
 	lengthOfPiece = 100
-	tickPitchVelocityList = []
-	currentTick = random.choice(tickM.keys())
+	notesList = []
+	currentLength = random.choice(lengthM.keys())
 	currentPitch = random.choice(pitchM.keys())
 	currentVelocity = random.choice(velocityM.keys())
 
-	print "start:", currentTick, currentPitch, currentVelocity
-	tickPitchVelocityList.append([currentTick, currentPitch, currentVelocity])
+	notesList.append(Note(currentPitch, currentLength, currentVelocity))
 
 	for number in range(lengthOfPiece-1):
-		element = [0,0,0]
 		r = random.random()
 		i = 0
-		for item in tickM[currentTick]:
-			i += tickM[currentTick][item]
+		for item in lengthM[currentLength]:
+			i += lengthM[currentLength][item]
 			if r<i:
-				currentTick = item
+				currentLength = item
 				break
 
 		r2 = random.random()
@@ -46,53 +43,47 @@ def highestPlausibility(tickM, pitchM, velocityM):
 			if r3<i3:
 				currentVelocity = item
 				break
-		#print "index", index, ":", tickPitchVelocityList[indexpitch]
-		tickPitchVelocityList.append([currentTick, currentPitch, currentVelocity])
 
-	print tickPitchVelocityList
-	return tickPitchVelocityList
+		note = Note(currentPitch, currentLength, currentVelocity)
+		notesList.append(note)
+
+	return notesList
 
 def main():
-	inputFiles = glob.glob('midis/midiworld/classic/bach_acttrag.mid')
-	#inputFiles = glob.glob('midis/midiworld/classic/bach*.mid')
+	#inputFiles = glob.glob('midis/midiworld/classic/bach_acttrag.mid')
+	inputFiles = glob.glob('midis/midiworld/classic/bach*.mid')
 	createNewTransition = True
 	if createNewTransition:
-		tickM, pitchM, velocityM = tt.getTransitionMatrix(inputFiles)
-		print('tickM.txt', 'picthM.txt', 'velocityM.txt')
-	else:
-		pass
-		# Somehow read in the transition matrices
-		# Tentative file names are above, but we can change the file format
-		
+		getTransitionMatrix(inputFiles)
+	
+	lengthM = loadMatrixFromFile("matrices/bachLengthM.dat")
+	pitchM = loadMatrixFromFile("matrices/bachPitchM.dat")
+	velocityM = loadMatrixFromFile("matrices/bachVelocityM.dat")		
 
-	tickPitchVelocityList = highestPlausibility(tickM, pitchM, velocityM)
+	notesList = highestPlausibility(lengthM, pitchM, velocityM)
 	outFileName = "midis/new.mid"
 	# Instantiate a MIDI Pattern (contains a list of tracks)
 	pattern = midi.Pattern()
+	resolution = pattern.resolution
 	# Instantiate a MIDI Track (contains a list of MIDI events)
 	track = midi.Track()
 	# Append the track to the pattern
 	pattern.append(track)
 	
-	prevPitch = None
-	for item in tickPitchVelocityList:
-		tick = item[0]
-		pitch = item[1]
-		velocity = item[2]
+	for note in notesList:
+		tick = note.lengthToTick(note.length, resolution)
+		pitch = note.pitch
+		velocity = note.volume
 		# Append the new note
-		track.append(midi.NoteOnEvent(tick=tick, pitch = pitch, velocity=velocity))
+		track.append(midi.NoteOnEvent(tick=0, pitch = pitch, velocity=velocity))
 		# Stop the previous note to avoid unpleasant mixing
-		track.append(midi.NoteOnEvent(tick=112, pitch=pitch,velocity=0))
-		prevPitch = pitch
-
-	track.append(midi.NoteOffEvent(tick=300, pitch=prevPitch))
-
-	print pattern
+		track.append(midi.NoteOnEvent(tick=tick, pitch=pitch,velocity=0))
 
 	# Add the end of track event, append it to the track
 	eot = midi.EndOfTrackEvent(tick=0)
 	track.append(eot)
 
+	print pattern
 	# Save the pattern to disk
 	midi.write_midifile(outFileName, pattern)
 

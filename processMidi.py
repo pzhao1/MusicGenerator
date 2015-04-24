@@ -2,10 +2,6 @@ import midi
 import glob
 import fractions
 
-inFileName = "midis/FurElise.mid"
-elisePattern = midi.read_midifile(inFileName)
-
-
 class Note(object):
 	# The smallest note we 
 	UNIT = 384
@@ -54,6 +50,8 @@ class Note(object):
 	def length(self, length_in):
 		if length_in < 1:
 			raise ValueError("Note: " + str(length_in) + " is not a valid length value")
+		if length_in > Note.UNIT:
+			length_in = Note.UNIT
 		self._length = length_in
 
 
