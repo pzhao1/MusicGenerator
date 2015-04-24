@@ -14,21 +14,20 @@ def highestPlausibility(tickM, pitchM, velocityM):
 	"""
 	lengthOfPiece = 100
 	tickPitchVelocityList = []
-	tickPitchVelocity = []
 	currentTick = random.choice(tickM.keys())
 	currentPitch = random.choice(pitchM.keys())
 	currentVelocity = random.choice(velocityM.keys())
-	#currentPitch = random.choice([pitch for pitch in pitchM.iterkeys() if sum(pitchM[pitch].values())!=0])
-	#currentVelocity = random.choice([velocity for velocity in velocityM.iterkeys() if sum(velocityM[velocity].values())!=0])
 
 	print "start:", currentTick, currentPitch, currentVelocity
-	for number in range(lengthOfPiece):
+	tickPitchVelocityList.append([currentTick, currentPitch, currentVelocity])
+
+	for number in range(lengthOfPiece-1):
+		element = [0,0,0]
 		r = random.random()
 		i = 0
 		for item in tickM[currentTick]:
 			i += tickM[currentTick][item]
 			if r<i:
-				tickPitchVelocity.append(item)
 				currentTick = item
 				break
 
@@ -37,7 +36,6 @@ def highestPlausibility(tickM, pitchM, velocityM):
 		for item in pitchM[currentPitch]:
 			i2 += pitchM[currentPitch][item]
 			if r2<i2:
-				tickPitchVelocity.append(item)
 				currentPitch = item
 				break
 
@@ -46,11 +44,10 @@ def highestPlausibility(tickM, pitchM, velocityM):
 		for item in pitchM[currentVelocity]:
 			i3 += velocityM[currentVelocity][item]
 			if r3<i3:
-				tickPitchVelocity.append(item)
 				currentVelocity = item
 				break
 		#print "index", index, ":", tickPitchVelocityList[indexpitch]
-		tickPitchVelocityList.append(tickPitchVelocity)
+		tickPitchVelocityList.append([currentTick, currentPitch, currentVelocity])
 
 	print tickPitchVelocityList
 	return tickPitchVelocityList
@@ -80,16 +77,17 @@ def main():
 	prevPitch = None
 	for item in tickPitchVelocityList:
 		tick = item[0]
-		velocity = item[1]
-		pitch = item[2]
+		pitch = item[1]
+		velocity = item[2]
 		# Append the new note
-		track.append(midi.NoteOnEvent(tick=tick, velocity=velocity, pitch=pitch))
+		track.append(midi.NoteOnEvent(tick=tick, pitch = pitch, velocity=velocity))
 		# Stop the previous note to avoid unpleasant mixing
-		if prevPitch != None and prevPitch != pitch:
-			track.append(midi.NoteOffEvent(tick=tick, pitch=pitch))
+		track.append(midi.NoteOnEvent(tick=112, pitch=pitch,velocity=0))
 		prevPitch = pitch
 
 	track.append(midi.NoteOffEvent(tick=300, pitch=prevPitch))
+
+	print pattern
 
 	# Add the end of track event, append it to the track
 	eot = midi.EndOfTrackEvent(tick=0)

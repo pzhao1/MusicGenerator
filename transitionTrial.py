@@ -38,6 +38,7 @@ def getInfoForOne(inFileName):
 	pitchList = {}
 	velocityList = {}
 
+	print inFilePattern[1]
 	# Go through the notes. Record transitions
 	num_tracks = len(inFilePattern)
 	for track in range(num_tracks):
@@ -46,9 +47,11 @@ def getInfoForOne(inFileName):
 		velocityList[track] = []
 		for event in inFilePattern[track]:
 			if isinstance(event, midi.events.NoteOnEvent):
-				tickList[track].append(event.tick)
-				pitchList[track].append(event.get_pitch())
-				velocityList[track].append(event.get_velocity())
+								
+				if event.get_velocity() != 0:
+					tickList[track].append(event.tick)
+					pitchList[track].append(event.get_pitch())
+					velocityList[track].append(event.get_velocity())
 		#print "   track", track, ":", len(tickList[track])
 
 	# return these information
@@ -95,7 +98,7 @@ def getTransitionMatrix(inFileNames):
 def main():
 
 	# Code used to generate and save matrices to file
-	files = glob.glob('midis/midiworld/classic/bach*.mid')
+	files = glob.glob('midis/midiworld/classic/bach_acttrag.mid')
 	tickM, pitchM, velocityM = getTransitionMatrix(files)
 
 	# Just checking dimension is correct. 0 is not a key in pitch
