@@ -209,8 +209,10 @@ def handleNoteOnEvent(sheet, currentNotes, tickCount, event):
 		if curNoteInfo["hasNote"]:
 			newNoteLen = Note.tickToLength(tickCount - curNoteInfo["startTick"], sheet.resolution)
 			
-			# This happens when we have a chord. Ignore chords for now.
+			# This happens when we have a chord. For now we only get the highest note of chord.
 			if newNoteLen == 0:
+				if event.data[0] > curNoteInfo["pitch"]:
+					curNoteInfo["pitch"] = event.data[0]
 				return
 
 			newNote = Note(curNoteInfo["pitch"], newNoteLen, curNoteInfo["volume"])
@@ -256,6 +258,15 @@ def getSheet(inFileName):
 
 	return sheet
 
-	
+
+def main():
+	pass
+	#fileNames = glob.glob("midis/midiworld/classic/*.mid")
+	#for fileName in fileNames:
+	#	sheet = getSheet(fileName)
+	#	print fileName, len(sheet.channels)
+
+if __name__ == "__main__":
+	main()
 
 
