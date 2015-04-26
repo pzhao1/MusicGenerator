@@ -17,7 +17,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 	currentPitch = random.choice(pitchM.keys())
 	currentVelocity = random.choice(velocityM.keys())
 
-	notesList.append(Note(currentPitch, currentLength, currentVelocity))
+	notesList.append(Note(currentPitch[0], currentLength, currentVelocity))
 
 	for number in range(lengthOfPiece-1):
 		r = random.random()
@@ -28,13 +28,18 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 				currentLength = item
 				break
 
-		r2 = random.random()
-		i2 = 0
-		for item in range(128):
-			i2 += pitchM[currentPitch][item]
-			if r2<i2:
-				currentPitch = item
-				break
+		if number==0:
+			currentPitch2 = currentPitch[1]
+			currentPitch = currentPitch[0]
+		else:
+			r2 = random.random()
+			i2 = 0
+			for item in pitchM[(currentPitch,currentPitch2)]:
+				i2 += pitchM[(currentPitch,currentPitch2)][item]
+				if r2<i2:
+					currentPitch = currentPitch2
+					currentPitch2 = item
+					break
 
 		r3 = random.random()
 		i3 = 0
@@ -44,7 +49,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 				currentVelocity = item
 				break
 
-		note = Note(currentPitch, currentLength, currentVelocity)
+		note = Note(currentPitch2, currentLength, currentVelocity)
 		notesList.append(note)
 
 	return notesList
@@ -56,14 +61,15 @@ def main():
 
 	inputFiles = glob.glob('midis/midiworld/classic/' + composerName + '*.mid')
 	if createNewTransition:
-		getTransitionMatrix(inputFiles, composerName)
+		getTransitionMatrix2(inputFiles, composerName)
 	
-	lengthM = loadMatrixFromFile("matrices/" + composerName + "LengthM.dat")
-	pitchM = loadMatrixFromFile("matrices/" + composerName + "PitchM.dat")
-	velocityM = loadMatrixFromFile("matrices/"  + composerName + "VelocityM.dat")		
+	lengthM = loadMatrixFromFile("matrices/" + composerName + "LengthM2.dat")
+	pitchM = loadMatrixFromFile("matrices/" + composerName + "PitchM2.dat")
+	velocityM = loadMatrixFromFile("matrices/"  + composerName + "VelocityM2.dat")		
 
+	print "velocityM[39]:", velocityM[39]
 	notesList = highestPlausibility(lengthM, pitchM, velocityM)
-	outFileName = "midis/" + composerName + "New.mid"
+	outFileName = "midis/" + composerName + "New2.mid"
 
 	# Instantiate a MIDI Pattern (contains a list of tracks)
 	resolution=384
