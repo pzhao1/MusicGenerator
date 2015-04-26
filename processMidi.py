@@ -214,9 +214,24 @@ class Sheet(object):
 			for note in track.getNotes():
 				pitchDistribution[(note.pitch)%12] += 1
 
-		keyFreqSorted = sorted(pitchDistribution.items(), key=operator.itemgetter(1))[0:7]
+		keyFreqSorted = sorted(pitchDistribution.items(), key=operator.itemgetter(1))
 		
-		bestMatching = -1
+		bestMatch = -1
+		bestScore = -1
+		for guess in range(12):
+			score = 0
+			for key, freq in keyFreqSorted:
+				if key in majorKeys[guess]:
+					score += freq
+
+			if score > bestScore:
+				bestScore = score
+				bestMatch = guess
+
+		return Note.KEY_TABLE[bestMatch]
+
+
+
 		
 
 
