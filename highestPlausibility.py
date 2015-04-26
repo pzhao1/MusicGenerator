@@ -51,7 +51,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 
 def main():
 
-	composerName = "bach"
+	composerName = "chopin"
 	createNewTransition = False
 
 	inputFiles = glob.glob('midis/midiworld/classic/' + composerName + '*.mid')
@@ -66,8 +66,9 @@ def main():
 	outFileName = "midis/" + composerName + "New.mid"
 
 	# Instantiate a MIDI Pattern (contains a list of tracks)
-	pattern = midi.Pattern()
-	resolution = pattern.resolution
+	resolution=384
+	pattern = midi.Pattern(resolution=resolution)
+	
 
 	# Instantiate a MIDI Track (contains a list of MIDI events)
 	track = midi.Track()
