@@ -29,7 +29,7 @@ def normalize(matrix):
 	return matrix
 
 
-def getTransitionMatrix(inFileNames):
+def getTransitionMatrix(inFileNames, savePrefix):
 	lengthByFile = {}
 	pitchByFile = {}
 	velocityByFile = {}
@@ -44,9 +44,8 @@ def getTransitionMatrix(inFileNames):
 	for name in inFileNames:
 		print "reading", name
 		sheet = getSheet(name)
-		channels = sheet.getChannels()
-		for channel in channels:
-			notes = channel.getNotes()
+		for track in sheet.getTracks():
+			notes = track.getNotes()
 			for i in range(len(notes)-1):
 				curNote = notes[i]
 				nextNote = notes[i+1]
@@ -58,9 +57,9 @@ def getTransitionMatrix(inFileNames):
 	pitchM = normalize(pitchM)
 	velocityM = normalize(velocityM)
 
-	saveMatrixToFile(lengthM, "matrices/bachLengthM.dat")
-	saveMatrixToFile(pitchM, "matrices/bachPitchM.dat")
-	saveMatrixToFile(velocityM, "matrices/bachVelocityM.dat")
+	saveMatrixToFile(lengthM, "matrices/" + savePrefix + "LengthM.dat")
+	saveMatrixToFile(pitchM, "matrices/" + savePrefix + "PitchM.dat")
+	saveMatrixToFile(velocityM, "matrices/" + savePrefix + "VelocityM.dat")
 
 
 

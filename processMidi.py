@@ -131,21 +131,22 @@ class Bar(object):
 	Try to append a note to this channel.
 	If overflows, don't append and return False. Else, append and return True.
 	"""
-	def appendNote(self, note_in):
+	def addNote(self, note_in):
 		if (note_in.length > self.spaceLeft()):
 			return False
 		self.notes.append(note_in)
 		return True
 
 
-class Channel(object):
-	def __init__(self, index_in):
+class Track(object):
+	def __init__(self, index_in, channel_in):
 		self.index = index_in
+		self.channel = channel_in
 		self.notes = []
 
 
 	def __str__(self):
-		toReturn = "Channel %d: %d notes" %(self.index, len(self.notes))
+		toReturn = ("Track %d on Channel %d: %d notes" %(self.index, self.channel, len(self.notes)))
 		toReturn += ("\n" + "-"*60)
 		for index in range(len(self.notes)):
 			if (index%4) == 0:
@@ -155,9 +156,9 @@ class Channel(object):
 
 
 	def __repr__(self):
-		return "Channel(%d, %d notes)" %(self.index, len(self.notes))
+		return ("Track %d on Channel %d: %d notes" %(self.index, self.channel, len(self.notes)))
 
-	def appendNote(self, note_in):
+	def addNote(self, note_in):
 		self.notes.append(note_in)
 
 	def getNotes(self):
@@ -170,44 +171,40 @@ class Sheet(object):
 	def __init__(self, name_in, resolution_in):
 		self.name = name_in
 		self.resolution = resolution_in
-		self.channels = {}
+		self.tracks = {}
 
 	def __str__(self):
 		toReturn = "\nTrack: " + self.name
-		for channel in self.getChannels():
-			toReturn += ("\n\n" + str(channel))
+		for track in self.getTracks():
+			toReturn += ("\n\n" + str(track))
 		toReturn += "\n"
 		return toReturn
 
 	def __repr__(self):
-		return "Sheet(%s, %d channels)" %(self.name, len(self.channels))
+		return "Sheet(%s, %d channels)" %(self.name, len(self.tracks))
 
-	def addNote(self, channel_in, note_in):
-		if channel_in not in self.channels:
-			self.channels[channel_in] = Channel(channel_in)
-		self.channels[channel_in].appendNote(note_in)
+	def addNote(self, trackIndex, channelIndex, note):
+		if (trackIndex, channelIndex) not in self.tracks:
+			self.tracks[(trackIndex, channelIndex)] = Track(trackIndex, channelIndex)
+
+		self.tracks[(trackIndex, channelIndex)].addNote(note)
 		
-	def addChannel(self, channel_in):
-		if channel_in.index in self.channels:
-			raise ValueError("Sheet::addChannel(): channel index %d already exists" %(channel_in.index))
-		self.channels[channel_in.index] = channel_in
 
-	def getChannels(self):
-		return [value for (key, value) in sorted(self.channels.items())]
+	def getTracks(self):
+		return [value for (key, value) in sorted(self.tracks.items())]
 
 
 
 
-
-def handleNoteOnEvent(sheet, currentNotes, tickCount, event):
+def handleNoteOnEvent(sheet, event, currentNotes, currentTick, currentTrack):
 	# NoteOnEvent with volume=0 are rests. We ignore them.
-	# Notice rest time is still counted into current not length.
+	# Notice rest time is still counted into current note length.
 	if event.data[1] > 0:
 		curNoteInfo = currentNotes[event.channel]
 
 		# We are getting a new note. Write current note if there is one.
 		if curNoteInfo["hasNote"]:
-			newNoteLen = Note.tickToLength(tickCount - curNoteInfo["startTick"], sheet.resolution)
+			newNoteLen = Note.tickToLength(currentTick - curNoteInfo["startTick"], sheet.resolution)
 			
 			# This happens when we have a chord. For now we only get the highest note of chord.
 			if newNoteLen == 0:
@@ -216,11 +213,11 @@ def handleNoteOnEvent(sheet, currentNotes, tickCount, event):
 				return
 
 			newNote = Note(curNoteInfo["pitch"], newNoteLen, curNoteInfo["volume"])
-			sheet.addNote(event.channel, newNote)
+			sheet.addNote(currentTrack, event.channel, newNote)
 
 		# Store new note as current note.
 		curNoteInfo["hasNote"] = True
-		curNoteInfo["startTick"] = tickCount
+		curNoteInfo["startTick"] = currentTick
 		curNoteInfo["pitch"] = event.data[0]
 		curNoteInfo["volume"] = event.data[1]
 
@@ -231,27 +228,18 @@ def getSheet(inFileName):
 	inFilePattern = midi.read_midifile(inFileName)
 	resolution = inFilePattern.resolution
 
-	# Tracks happen in parallel. Loop through tracks to gather event information
-	eventSchedule = {}
-	for track in inFilePattern:
-		tickCount = 0
-		for event in track:
-			tickCount += event.tick
-			if tickCount not in eventSchedule:
-				eventSchedule[tickCount] = []
-			eventSchedule[tickCount].append(event)
 
+	sheet = Sheet(inFileName, resolution)
 
 	# Loop through events from beginning to end and generate sheet
-	sheet = Sheet(inFileName, resolution)
-	currentNotes = []
-	for i in range(16):
-		currentNotes.append({"hasNote":False, "startTick":0, "pitch":-1, "volume":-1})
-
-	for tickCount, eventList in sorted(eventSchedule.items()):
-		for event in eventList:
+	for currentTrack in range(len(inFilePattern)):
+		track = inFilePattern[currentTrack]
+		currentTick = 0
+		currentNotes = [{"hasNote":False, "startTick":0, "pitch":-1, "volume":-1} for x in range(16)]
+		for event in track:
+			currentTick += event.tick
 			if isinstance(event, midi.events.NoteOnEvent):
-				handleNoteOnEvent(sheet, currentNotes, tickCount, event)
+				handleNoteOnEvent(sheet, event, currentNotes, currentTick, currentTrack)
 			else:
 				# Handle other events later.
 				pass
@@ -260,11 +248,8 @@ def getSheet(inFileName):
 
 
 def main():
-	pass
-	#fileNames = glob.glob("midis/midiworld/classic/*.mid")
-	#for fileName in fileNames:
-	#	sheet = getSheet(fileName)
-	#	print fileName, len(sheet.channels)
+	pattern = midi.read_midifile("midis/midiworld/classic/chopin_fantaisie.mid")
+	print pattern
 
 if __name__ == "__main__":
 	main()

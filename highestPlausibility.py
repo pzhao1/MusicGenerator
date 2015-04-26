@@ -50,34 +50,51 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 	return notesList
 
 def main():
-	#inputFiles = glob.glob('midis/midiworld/classic/bach_acttrag.mid')
-	inputFiles = glob.glob('midis/midiworld/classic/bach*.mid')
-	createNewTransition = True
+
+	composerName = "bach"
+	createNewTransition = False
+
+	inputFiles = glob.glob('midis/midiworld/classic/' + composerName + '*.mid')
 	if createNewTransition:
-		getTransitionMatrix(inputFiles)
+		getTransitionMatrix(inputFiles, composerName)
 	
-	lengthM = loadMatrixFromFile("matrices/bachLengthM.dat")
-	pitchM = loadMatrixFromFile("matrices/bachPitchM.dat")
-	velocityM = loadMatrixFromFile("matrices/bachVelocityM.dat")		
+	lengthM = loadMatrixFromFile("matrices/" + composerName + "LengthM.dat")
+	pitchM = loadMatrixFromFile("matrices/" + composerName + "PitchM.dat")
+	velocityM = loadMatrixFromFile("matrices/"  + composerName + "VelocityM.dat")		
 
 	notesList = highestPlausibility(lengthM, pitchM, velocityM)
-	outFileName = "midis/new.mid"
+	outFileName = "midis/" + composerName + "New.mid"
+
 	# Instantiate a MIDI Pattern (contains a list of tracks)
 	pattern = midi.Pattern()
 	resolution = pattern.resolution
+
 	# Instantiate a MIDI Track (contains a list of MIDI events)
 	track = midi.Track()
+
 	# Append the track to the pattern
 	pattern.append(track)
+
+	# Set Instrument to piano
+	pEvent = midi.ProgramChangeEvent(tick=0, channel=0)
+	pEvent.set_value(1)
+	track.append(pEvent)
+
+	# Set tempo to 150 bpm
+	tEvent = midi.SetTempoEvent(tick=0)
+	tEvent.set_bpm(150)
+	track.append(tEvent)
 	
 	for note in notesList:
-		tick = note.lengthToTick(note.length, resolution)
+		tick = Note.lengthToTick(note.length, resolution)
 		pitch = note.pitch
 		velocity = note.volume
+
+		
 		# Append the new note
-		track.append(midi.NoteOnEvent(tick=0, pitch = pitch, velocity=velocity))
+		track.append(midi.NoteOnEvent(channel=0, tick=0, pitch = pitch, velocity=velocity))
 		# Stop the previous note to avoid unpleasant mixing
-		track.append(midi.NoteOnEvent(tick=tick, pitch=pitch,velocity=0))
+		track.append(midi.NoteOnEvent(channel=0, tick=tick, pitch=pitch,velocity=0))
 
 	# Add the end of track event, append it to the track
 	eot = midi.EndOfTrackEvent(tick=0)
