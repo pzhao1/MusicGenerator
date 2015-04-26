@@ -67,7 +67,6 @@ def main():
 	pitchM = loadMatrixFromFile("matrices/" + composerName + "PitchM2.dat")
 	velocityM = loadMatrixFromFile("matrices/"  + composerName + "VelocityM2.dat")		
 
-	print "velocityM[39]:", velocityM[39]
 	notesList = highestPlausibility(lengthM, pitchM, velocityM)
 	outFileName = "midis/" + composerName + "New2.mid"
 
