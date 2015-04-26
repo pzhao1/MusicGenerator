@@ -30,10 +30,6 @@ def normalize(matrix):
 
 
 def getTransitionMatrix(inFileNames, savePrefix):
-	lengthByFile = {}
-	pitchByFile = {}
-	velocityByFile = {}
-
 	# Initialize a transition matrix for tick, pitch and velocity with all 0s
 	lengthM = {length1: {length2: 1.0 for length2 in range(1,Note.UNIT+1)} for length1 in range(1,Note.UNIT+1)}
 	pitchM = {pitch1: {pitch2: 1.0 for pitch2 in range(128)} for pitch1 in range(128)}
@@ -61,6 +57,45 @@ def getTransitionMatrix(inFileNames, savePrefix):
 	saveMatrixToFile(pitchM, "matrices/" + savePrefix + "PitchM.dat")
 	saveMatrixToFile(velocityM, "matrices/" + savePrefix + "VelocityM.dat")
 
+
+def getTransitionMatrix2(inFileNames, savePrefix):
+	# Initialize a transition matrix for tick, pitch and velocity with all 0s
+	lengthM = {length1: {length2: 1.0 for length2 in range(1,Note.UNIT+1)} for length1 in range(1,Note.UNIT+1)}
+	listOfTuples = []
+	for item1 in range(128):
+		for item2 in range(128):
+			listOfTuples.append((item1, item2))
+	pitchM = {(pitch1, pitch2): 
+		{pitch3: 1.0 for pitch3 in range(128)} for (pitch1,pitch2) in listOfTuples}
+	velocityM = {velocity1: {velocity2: 1.0 for velocity2 in range(128)} for velocity1 in range(128)}
+
+
+	# Update the transition matrix based on oberservations from each file
+	for name in inFileNames:
+		print "reading", name
+		sheet = getSheet(name)
+		for track in sheet.getTracks():
+			notes = track.getNotes()
+			for i in range(len(notes)-2):
+				curNote = notes[i]
+				nextNote = notes[i+1]
+				nextNote2 = notes[i+2]
+				lengthM[curNote.length][nextNote.length] += 1
+				pitchM[(curNote.pitch,nextNote.pitch)][nextNote2.pitch] += 1
+				velocityM[curNote.volume][nextNote.volume] += 1
+			# Last transition for length and velocity
+			curNote = notes[len(notes)-2]
+			nextNote = notes[len(notes)-1]
+			lengthM[curNote.length][nextNote.length] += 1
+			velocityM[curNote.volume][nextNote.volume] += 1
+
+	lengthM = normalize(lengthM)
+	pitchM = normalize(pitchM)
+	velocityM = normalize(velocityM)
+
+	saveMatrixToFile(lengthM, "matrices/" + savePrefix + "LengthM2.dat")
+	saveMatrixToFile(pitchM, "matrices/" + savePrefix + "PitchM2.dat")
+	saveMatrixToFile(velocityM, "matrices/" + savePrefix + "VelocityM2.dat")
 
 
 
