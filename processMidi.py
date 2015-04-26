@@ -1,14 +1,13 @@
 import midi
 import glob
 import fractions
+import operator
 
 class Note(object):
 	# The smallest note we 
 	UNIT = 384
 	KEY_TABLE = ["C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B"]
-
 	
-
 	"""
 	resolution is defined in header of midi. It's (#Ticks)/(quarter note)
 	Our definition of length is (fraction of whole note)*Note.UNIT
@@ -193,6 +192,35 @@ class Sheet(object):
 	def getTracks(self):
 		return [value for (key, value) in sorted(self.tracks.items())]
 
+	def getKeySignature(self):
+
+		majorKeys = [
+						[0, 2, 4, 5, 7, 9, 11],
+						[1, 3, 5, 6, 8, 10, 0],
+						[2, 4, 6, 7, 9, 11, 1],
+						[3, 5, 7, 8, 10, 0, 2],
+						[4, 6, 8, 9, 11, 1, 3],
+						[5, 7, 9, 10, 0, 2, 4],
+						[6, 8, 10, 11, 1, 3, 5],
+						[7, 9, 11, 0, 2, 4, 6],
+						[8, 10, 0, 1, 3, 5, 7],
+						[9, 11, 1, 2, 4, 6, 8],
+						[10, 0, 2, 3, 5, 7, 9],
+						[11, 1, 3, 4, 6, 8, 10]
+					]
+
+		pitchDistribution = {x:0 for x in range(12)}
+		for track in self.getTracks():
+			for note in track.getNotes():
+				pitchDistribution[(note.pitch)%12] += 1
+
+		keyFreqSorted = sorted(pitchDistribution.items(), key=operator.itemgetter(1))[0:7]
+		
+		bestMatching = -1
+		
+
+
+
 
 
 
@@ -248,8 +276,9 @@ def getSheet(inFileName):
 
 
 def main():
-	pattern = midi.read_midifile("midis/midiworld/classic/chopin_fantaisie.mid")
-	print pattern
+	pass
+	#pattern = midi.read_midifile("midis/midiworld/classic/chopin_fantaisie.mid")
+	#print pattern
 
 if __name__ == "__main__":
 	main()
