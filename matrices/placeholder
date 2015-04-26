@@ -1,0 +1,7 @@
+I want to push a matrices/ directory to git, but not including any matrices
+(because they could be huge).
+
+Git doesn't allow empty directories. So this file is just a placeholder for git
+to recognize matrices/ directory. 
+
+All matrices should have .dat suffix.

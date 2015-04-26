@@ -28,8 +28,8 @@ def main():
 		track.append(midi.NoteOnEvent(tick=time, velocity=20, pitch=midi.__dict__[note]))
 
 		# Stop the previous note to avoid unpleasant mixing
-		if prevNote != None and prevNote != note:
-			track.append(midi.NoteOffEvent(tick=0, pitch=midi.__dict__[prevNote]))
+		#if prevNote != None and prevNote != note:
+		#	track.append(midi.NoteOffEvent(tick=time, pitch=midi.__dict__[prevNote]))
 
 		prevNote = note
 
@@ -38,6 +38,8 @@ def main():
 	# Add the end of track event, append it to the track
 	eot = midi.EndOfTrackEvent(tick=0)
 	track.append(eot)
+
+	print pattern
 
 	# Save the pattern to disk
 	midi.write_midifile(outFileName, pattern)
