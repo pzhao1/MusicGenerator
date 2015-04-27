@@ -51,8 +51,8 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 
 def main():
 
-	composerName = "haydn"
-	createNewTransition = True
+	composerName = "mozart"
+	createNewTransition = False
 
 	inputFiles = glob.glob('midis/midiworld/classic/' + composerName + '*.mid')
 	if createNewTransition:

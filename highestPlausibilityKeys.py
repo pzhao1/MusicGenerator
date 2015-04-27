@@ -57,7 +57,7 @@ def main():
 	if createNewTransition:
 		getTransitionMatrixForKeys(inputFiles)
 	
-	useKey = "D"
+	useKey = "C"
 	lengthM = loadMatrixFromFile("matrices/allLengthM.dat")
 	pitchM = loadMatrixFromFile("matrices/key" + useKey + "PitchM.dat")
 	velocityM = loadMatrixFromFile("matrices/allVelocityM.dat")		
