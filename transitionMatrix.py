@@ -98,6 +98,40 @@ def getTransitionMatrix2(inFileNames, savePrefix):
 	saveMatrixToFile(velocityM, "matrices/" + savePrefix + "VelocityM2.dat")
 
 
+def getTransitionMatrixForKeys(inFileNames):
+	# Initialize a transition matrix for tick, pitch and velocity with all 0s
+
+	pitchMList = []
+	lengthM = {length1: {length2: 1.0 for length2 in range(1,Note.UNIT+1)} for length1 in range(1,Note.UNIT+1)}
+	velocityM = {velocity1: {velocity2: 1.0 for velocity2 in range(128)} for velocity1 in range(128)}
+
+	for i in range(12):
+		pitchMList.append({pitch1: {pitch2: 1.0 for pitch2 in range(128)} for pitch1 in range(128)})
+
+
+	# Update the transition matrix based on oberservations from each file
+	for name in inFileNames:
+		print "reading", name
+		sheet = getSheet(name)
+		keySignature = sheet.getKeySignature()
+		for track in sheet.getTracks():
+			notes = track.getNotes()
+			for i in range(len(notes)-1):
+				curNote = notes[i]
+				nextNote = notes[i+1]
+				pitchMList[keySignature][curNote.pitch][nextNote.pitch] += 1
+				lengthM[curNote.length][nextNote.length] += 1
+				velocityM[curNote.volume][nextNote.volume] += 1
+	
+	for i in range(12):
+		pitchMList[i] = normalize(pitchMList[i])
+	lengthM = normalize(lengthM)
+	velocityM = normalize(velocityM)
+
+	for i in range(12):
+		saveMatrixToFile(pitchMList[i], "matrices/key" + Note.KEY_TABLE[i] + "PitchM.dat")
+	saveMatrixToFile(lengthM, "matrices/allLengthM.dat")
+	saveMatrixToFile(velocityM, "matrices/allVelocityM.dat")
 
 def main():
 

@@ -228,13 +228,7 @@ class Sheet(object):
 				bestScore = score
 				bestMatch = guess
 
-		return Note.KEY_TABLE[bestMatch]
-
-
-
-		
-
-
+		return bestMatch
 
 
 

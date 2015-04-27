@@ -21,7 +21,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 
 	for number in range(lengthOfPiece-1):
 		r = random.random()
-		i = 0
+		i = 0.0
 		for item in lengthM[currentLength]:
 			i += lengthM[currentLength][item]
 			if r<i:
@@ -29,7 +29,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 				break
 
 		r2 = random.random()
-		i2 = 0
+		i2 = 0.0
 		for item in range(128):
 			i2 += pitchM[currentPitch][item]
 			if r2<i2:
@@ -37,7 +37,7 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 				break
 
 		r3 = random.random()
-		i3 = 0
+		i3 = 0.0
 		for item in range(128):
 			i3 += velocityM[currentVelocity][item]
 			if r3<i3:
@@ -51,19 +51,19 @@ def highestPlausibility(lengthM, pitchM, velocityM):
 
 def main():
 
-	composerName = "haydn"
-	createNewTransition = True
+	createNewTransition = False
 
-	inputFiles = glob.glob('midis/midiworld/classic/' + composerName + '*.mid')
+	inputFiles = glob.glob('midis/midiworld/classic/*.mid')
 	if createNewTransition:
-		getTransitionMatrix(inputFiles, composerName)
+		getTransitionMatrixForKeys(inputFiles)
 	
-	lengthM = loadMatrixFromFile("matrices/" + composerName + "LengthM.dat")
-	pitchM = loadMatrixFromFile("matrices/" + composerName + "PitchM.dat")
-	velocityM = loadMatrixFromFile("matrices/"  + composerName + "VelocityM.dat")		
+	useKey = "D"
+	lengthM = loadMatrixFromFile("matrices/allLengthM.dat")
+	pitchM = loadMatrixFromFile("matrices/key" + useKey + "PitchM.dat")
+	velocityM = loadMatrixFromFile("matrices/allVelocityM.dat")		
 
 	notesList = highestPlausibility(lengthM, pitchM, velocityM)
-	outFileName = "midis/" + composerName + "New.mid"
+	outFileName = "midis/key" + useKey + "New.mid"
 
 	# Instantiate a MIDI Pattern (contains a list of tracks)
 	resolution=384
@@ -83,14 +83,13 @@ def main():
 
 	# Set tempo to 150 bpm
 	tEvent = midi.SetTempoEvent(tick=0)
-	tEvent.set_bpm(150)
+	tEvent.set_bpm(100)
 	track.append(tEvent)
 	
 	for note in notesList:
 		tick = Note.lengthToTick(note.length, resolution)
 		pitch = note.pitch
 		velocity = note.volume
-
 		
 		# Append the new note
 		track.append(midi.NoteOnEvent(channel=0, tick=0, pitch = pitch, velocity=velocity))
